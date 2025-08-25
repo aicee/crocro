@@ -18,13 +18,14 @@ interface CrocroDB extends DBSchema {
 
 const dbPromise = openDB<CrocroDB>('crocro', 2, {
   upgrade(db) {
-    const store: any = db.objectStoreNames.contains('messages')
+    const store = db.objectStoreNames.contains('messages')
       ? db.transaction('messages', 'readwrite').objectStore('messages')
       : db.createObjectStore('messages', { keyPath: 'id' });
-    if (store.indexNames.contains('by-room')) {
-      store.deleteIndex('by-room');
+    const objectStore = store as unknown as IDBObjectStore;
+    if (objectStore.indexNames.contains('by-room')) {
+      objectStore.deleteIndex('by-room');
     }
-    store.createIndex('by-room', 'room');
+    objectStore.createIndex('by-room', 'room');
   }
 });
 

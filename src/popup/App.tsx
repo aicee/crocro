@@ -18,6 +18,20 @@ export default function App() {
   const [typing, setTyping] = useState(false);
   const [peerTyping, setPeerTyping] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [myName, setMyName] = useState('Me');
+  const [friendName, setFriendName] = useState('Friend');
+  const [editingNames, setEditingNames] = useState(false);
+
+  useEffect(() => {
+    browser.storage.local.get(['myName', 'friendName']).then((res) => {
+      if (res.myName) setMyName(res.myName as string);
+      if (res.friendName) setFriendName(res.friendName as string);
+    });
+  }, []);
+
+  useEffect(() => {
+    browser.storage.local.set({ myName, friendName });
+  }, [myName, friendName]);
 
   useEffect(() => {
     const listener = (msg: { type: string; payload?: Message; from?: string; room?: string }) => {
@@ -78,6 +92,18 @@ export default function App() {
   if (!room) {
     return (
       <div style={{ padding: 16, width: 300 }}>
+        <input
+          value={myName}
+          onChange={(e) => setMyName(e.target.value)}
+          placeholder="Your name"
+          style={{ width: '100%', marginBottom: 8 }}
+        />
+        <input
+          value={friendName}
+          onChange={(e) => setFriendName(e.target.value)}
+          placeholder="Friend's name"
+          style={{ width: '100%', marginBottom: 8 }}
+        />
         <button onClick={createRoom} style={{ width: '100%', marginBottom: 8 }}>
           Create Room
         </button>
@@ -99,15 +125,37 @@ export default function App() {
   return (
     <div style={{ padding: 16, width: 300 }}>
       <div style={{ marginBottom: 8 }}>Room code: {room}</div>
+      <button
+        onClick={() => setEditingNames((v) => !v)}
+        style={{ width: '100%', marginBottom: 8 }}
+      >
+        {editingNames ? 'Done' : 'Edit Names'}
+      </button>
+      {editingNames && (
+        <div style={{ marginBottom: 8 }}>
+          <input
+            value={myName}
+            onChange={(e) => setMyName(e.target.value)}
+            placeholder="Your name"
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+          <input
+            value={friendName}
+            onChange={(e) => setFriendName(e.target.value)}
+            placeholder="Friend's name"
+            style={{ width: '100%' }}
+          />
+        </div>
+      )}
       <div style={{ maxHeight: 300, overflowY: 'auto', marginBottom: 8 }}>
         {messages.map((m) => (
           <div key={m.id} style={{ marginBottom: 4 }}>
-            <strong>{m.from === 'me' ? 'Me' : 'Friend'}:</strong> {m.body}
+            <strong>{m.from === 'me' ? myName : friendName}:</strong> {m.body}
           </div>
         ))}
         {peerTyping && (
           <div>
-            <em>Friend typing...</em>
+            <em>{friendName} typing...</em>
           </div>
         )}
       </div>
