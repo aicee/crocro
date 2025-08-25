@@ -6,7 +6,7 @@ interface CrocroDB extends DBSchema {
     value: {
       id: string;
       from: string;
-      to: string;
+      room: string;
       body: string;
       createdAt: number;
       ackAt?: number;
@@ -16,12 +16,15 @@ interface CrocroDB extends DBSchema {
   };
 }
 
-const dbPromise = openDB<CrocroDB>('crocro', 1, {
+const dbPromise = openDB<CrocroDB>('crocro', 2, {
   upgrade(db) {
-    const store = db.createObjectStore('messages', {
-      keyPath: 'id'
-    });
-    store.createIndex('by-room', 'to');
+    const store: any = db.objectStoreNames.contains('messages')
+      ? db.transaction('messages', 'readwrite').objectStore('messages')
+      : db.createObjectStore('messages', { keyPath: 'id' });
+    if (store.indexNames.contains('by-room')) {
+      store.deleteIndex('by-room');
+    }
+    store.createIndex('by-room', 'room');
   }
 });
 

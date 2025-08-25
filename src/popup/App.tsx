@@ -5,32 +5,31 @@ import { getMessages } from '../lib/idb';
 interface Message {
   id: string;
   from: string;
-  to: string;
+  room: string;
   body: string;
   createdAt: number;
   readAt?: number;
 }
 
 export default function App() {
+  const [room, setRoom] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const [peerTyping, setPeerTyping] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
 
   useEffect(() => {
-    async function load() {
-      const msgs = await getMessages('friend');
-      setMessages(msgs);
-    }
-    load();
-    const listener = (msg: { type: string; payload?: Message; from?: string }) => {
+    const listener = (msg: { type: string; payload?: Message; from?: string; room?: string }) => {
       if (msg.type === 'message' && msg.payload) {
-        const payload = msg.payload;
-        setMessages((m) => [...m, payload]);
+        setMessages((m) => [...m, msg.payload!]);
       }
       if (msg.type === 'typing') {
         setPeerTyping(true);
         setTimeout(() => setPeerTyping(false), 1000);
+      }
+      if ((msg.type === 'room-created' || msg.type === 'room-joined') && msg.room) {
+        setRoom(msg.room);
       }
     };
     browser.runtime.onMessage.addListener(listener);
@@ -40,16 +39,23 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (typing) {
+    if (room) {
+      getMessages(room).then((msgs) => setMessages(msgs));
+    }
+  }, [room]);
+
+  useEffect(() => {
+    if (typing && room) {
       browser.runtime.sendMessage({ type: 'typing', from: 'me' });
     }
-  }, [typing]);
+  }, [typing, room]);
 
   const send = () => {
+    if (!room) return;
     const payload = {
       id: crypto.randomUUID(),
       from: 'me',
-      to: 'friend',
+      room,
       body: input,
       createdAt: Date.now()
     };
@@ -59,8 +65,40 @@ export default function App() {
     setTyping(false);
   };
 
+  const createRoom = () => {
+    browser.runtime.sendMessage({ type: 'create-room' });
+  };
+
+  const joinRoom = () => {
+    if (joinCode.trim()) {
+      browser.runtime.sendMessage({ type: 'join-room', room: joinCode.trim() });
+    }
+  };
+
+  if (!room) {
+    return (
+      <div style={{ padding: 16, width: 300 }}>
+        <button onClick={createRoom} style={{ width: '100%', marginBottom: 8 }}>
+          Create Room
+        </button>
+        <div>
+          <input
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value)}
+            placeholder="Enter code"
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+          <button onClick={joinRoom} style={{ width: '100%' }}>
+            Join
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 16, width: 300 }}>
+      <div style={{ marginBottom: 8 }}>Room code: {room}</div>
       <div style={{ maxHeight: 300, overflowY: 'auto', marginBottom: 8 }}>
         {messages.map((m) => (
           <div key={m.id} style={{ marginBottom: 4 }}>

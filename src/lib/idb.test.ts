@@ -4,7 +4,7 @@ import { putMessage, getMessages } from './idb';
 
 describe('idb', () => {
   beforeEach(async () => {
-    const db = await (await import('idb')).openDB('crocro', 1);
+    const db = await (await import('idb')).openDB('crocro', 2);
     await db.clear('messages');
   });
 
@@ -12,12 +12,12 @@ describe('idb', () => {
     const msg = {
       id: '1',
       from: 'me',
-      to: 'friend',
+      room: 'room1',
       body: 'hi',
       createdAt: Date.now()
     };
     await putMessage(msg);
-    const msgs = await getMessages('friend');
+    const msgs = await getMessages('room1');
     expect(msgs.length).toBe(1);
     expect(msgs[0].body).toBe('hi');
   });

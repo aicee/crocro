@@ -1,6 +1,6 @@
 # Crocro Extension
 
-Crocro is a cross-browser chat extension for Chrome and Firefox. It provides a minimal real-time chat between two friends using a background service worker and a React popup.
+Crocro is a cross-browser chat extension for Chrome and Firefox. It provides a minimal real-time chat between two friends using room codes, a background service worker and a React popup.
 
 ## Development
 
@@ -36,7 +36,8 @@ pnpm lint && pnpm typecheck && pnpm test
 ## Usage
 
 1. Open the Crocro extension popup.
-2. Type your message and press **Send**.
-3. The background keeps the chat connection alive even when the popup is closed.
+2. The first user clicks **Create Room** and shares the shown code.
+3. The second user enters the code and joins the room.
+4. Type your message and press **Send**. The background keeps the chat connection alive even when the popup is closed.
 
 To chat with a friend, both users should load the extension and connect to the same signaling server (`ws://localhost:8080` by default).
