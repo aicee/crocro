@@ -1,10 +1,12 @@
 # AGENTS.md
 
-This file tells the coding agent (OpenAI Codex) how to build and modify a **cross‑browser chat extension for real‑time messaging between two people** designed to feel instantaneous when the popup is open, and reliably up‑to‑date when it’s closed called **Crocro**. The extension runs on Chrome and Firefox using the WebExtensions API (MV3), shares one codebase, and uses a lightweight signaling server to establish peer connections.
+This file tells the coding agent (OpenAI Codex) how to build and modify a cross‑browser chat extension for real‑time messaging between two people. The extension runs on Chrome and Firefox using the WebExtensions API (MV3), shares one codebase, and uses a lightweight signaling server to establish peer connections.
 
 ## Project overview
 
-The extension injects a small, toggleable chat panel on any page. Two users can exchange messages in real time with **WebRTC DataChannels** for low latency. A **WebSocket signaling service** is used to discover peers and exchange SDP/ICE; if peer‑to‑peer is blocked, messages are relayed through a TURN server or the signaling backend as a fallback.
+### Crocro — Cross‑Browser Chat Extension
+
+A cross-browser chat extension (Firefox & Chrome) that enables real-time messaging between two friends, designed to feel instantaneous when the popup is open, and reliably up‑to‑date when it’s closed. This is a browser extension built with React + TypeScript + Vite. The extension uses Manifest V3 and includes both a popup interface and background service worker and builds with one codebase for Chrome + Firefox.
 
 **Primary goals**
 
@@ -50,7 +52,7 @@ The extension injects a small, toggleable chat panel on any page. Two users can 
 
 ## Data flow (happy path)
 
-1. **Creator** clicks the toolbar button or presses the shortcut to open the panel, then chooses **Start 1:1 chat** → the background calls the signaling server to create `roomId` and returns a join code.
+1. **Creator** clicks the toolbar button or presses the shortcut to open the popup, then chooses **Start chat** → the background calls the signaling server to create `roomId` and returns a join code.
 2. **Joiner** enters the code or opens the invite link. Both sides connect to signaling over WebSocket.
 3. The background creates a **WebRTC PeerConnection**, exchanges SDP/ICE candidates via signaling, and opens a **reliable DataChannel** named `chat`.
 4. When `chat` is open, messages stream P2P. Acks are sent as small control frames; read receipts piggyback on focus/visibility events.
@@ -83,7 +85,7 @@ The extension injects a small, toggleable chat panel on any page. Two users can 
 ## Project layout
 
 ```
-/ (repo root)
+/crocro
   package.json
   vite.config.ts
   /src
@@ -137,9 +139,13 @@ The background loads these at build time; the Options page allows runtime overri
 ```json
 {
   "manifest_version": 3,
-  "name": "WeTwo – P2P Chat",
+  "name": "Crocro - Realtime private chat",
   "version": "0.1.0",
-  "action": { "default_title": "Open Chat" },
+  "description": "Private, minimal chat between two friends.",
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "Crocro"
+  },
   "background": { "service_worker": "background.js", "type": "module" },
   "permissions": ["storage", "scripting"],
   "optional_permissions": ["notifications", "tabs"],
@@ -156,21 +162,19 @@ The background loads these at build time; the Options page allows runtime overri
       "resources": ["ui/*", "assets/*"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "options_ui": { "page": "popup/index.html", "open_in_tab": true }
 }
 ```
-
-Keep host permissions narrow if the injected panel doesn’t need broad matches.
 
 ---
 
 ## UI/UX
 
-- Panel toggles with toolbar button or a shortcut (e.g., `Ctrl/Cmd+Shift+J`).
 - First‑run shows **Create session** or **Join with code**.
 - Show presence (online/connecting), typing indicator, and read receipts.
 - Markdown rendering is allowed for plaintext emphasis, with sanitization and copy buttons for code blocks.
-- Desktop notifications (optional) when the panel is hidden.
+- Desktop notifications (optional).
 - For design guideline, refer to ./style-guide.md
 
 ---
