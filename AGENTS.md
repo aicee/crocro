@@ -240,6 +240,7 @@ The extension connects to `VITE_SIGNALING_URL`.
 - Minimal WebSocket signaling server for room-based message relay.
 - React popup with typing indicator and read receipts.
 - Background service worker maintains a persistent WebSocket connection and stores messages in IndexedDB.
+- Users can create a room and join with a shared code.
 
 **When making changes**, update this file and add/adjust tests accordingly.
 
