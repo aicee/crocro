@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #111;
+  background: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #f1f1f1;
+    background: #121212;
+  }
+}
+
+button {
+  padding: 8px;
+  cursor: pointer;
+}
