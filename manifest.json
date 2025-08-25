@@ -8,7 +8,7 @@
     "default_title": "Crocro"
   },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background/index.ts",
     "type": "module"
   },
   "permissions": ["storage", "scripting"],
@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["content/index.ts"],
       "run_at": "document_idle"
     }
   ],
