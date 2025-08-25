@@ -4,6 +4,7 @@ import webExtension from '@samrum/vite-plugin-web-extension';
 import manifest from './manifest.json';
 
 export default defineConfig(({ mode }) => ({
+  root: 'src',
   plugins: [
     react(),
     webExtension({
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     })
   ],
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true
   }
 }));

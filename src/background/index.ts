@@ -26,11 +26,11 @@ function connect() {
 
 connect();
 
-browser.runtime.onMessage.addListener(async (msg: { type: string; payload?: any; from?: string; id?: string }) => {
+browser.runtime.onMessage.addListener(async (msg: { type: string; payload?: Parameters<typeof putMessage>[0]; from?: string; id?: string }) => {
   switch (msg.type) {
     case 'send-message':
       ws?.send(JSON.stringify({ type: 'message', payload: msg.payload }));
-      await putMessage(msg.payload);
+      await putMessage(msg.payload!);
       break;
     case 'typing':
       ws?.send(JSON.stringify({ type: 'typing', from: msg.from }));
